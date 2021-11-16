@@ -76,7 +76,7 @@
 		9EAB44D82742569B00D01DFF = {
 			isa = PBXGroup;
 			children = (
-				9EAB44E32742569B00D01DFF /* birthday */,
+				9EAB44E32742569B00D01DFF /* src */,
 				9EAB44F42742569E00D01DFF /* birthdayTests */,
 				9EAB44FE2742569E00D01DFF /* birthdayUITests */,
 				9EAB44E22742569B00D01DFF /* Products */,
@@ -93,7 +93,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		9EAB44E32742569B00D01DFF /* birthday */ = {
+		9EAB44E32742569B00D01DFF /* src */ = {
 			isa = PBXGroup;
 			children = (
 				9EAB44E42742569B00D01DFF /* birthdayApp.swift */,
@@ -102,7 +102,7 @@
 				9EAB44E82742569E00D01DFF /* Assets.xcassets */,
 				9EAB44EA2742569E00D01DFF /* Preview Content */,
 			);
-			path = birthday;
+			path = src;
 			sourceTree = "<group>";
 		};
 		9EAB44EA2742569E00D01DFF /* Preview Content */ = {
@@ -422,7 +422,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"birthday/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"src/Preview Content\"";
 				DEVELOPMENT_TEAM = H66DJC42Q7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -451,7 +451,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"birthday/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"src/Preview Content\"";
 				DEVELOPMENT_TEAM = H66DJC42Q7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
