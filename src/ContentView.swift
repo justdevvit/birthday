@@ -19,17 +19,18 @@ struct ContentView: View {
     @State private var showingImagePicker = false
     @State private var inputImage: UIImage?
     @State private var image: Image?
-    @State private var dateWasSet: Bool = false
+    @State private var shouldShowBirthdayScreen = false
     
     init() {
         restoreData()
     }
 
     var body: some View {
-        ScrollView {
+        NavigationView {
+            ScrollView {
                     VStack {
                         Text("Happy Birthday!")
-                            .padding(.vertical)
+                            .padding(.bottom)
                         
                         TextField("Please type in the baby name", text: $name).padding(.bottom).multilineTextAlignment(TextAlignment.center)
                             .onChange(of: name) {newValue in
@@ -55,11 +56,17 @@ struct ContentView: View {
                         }
                         
                         Button("Show birthday screen", action: showBirthdayScreen).padding(.vertical).disabled(name.isEmpty || self.date == Date.distantFuture)
+                        
+                        NavigationLink(destination: birthdayScreenView(),
+                                       isActive: self.$shouldShowBirthdayScreen) {
+                            EmptyView()
+                        }
                     }
                 }
                 .sheet(isPresented: $showingImagePicker, onDismiss: imageSelected) {
                     ImagePicker(image: $inputImage)
-                }
+            }
+        }
     }
     
     func showBirthdayScreen() {
@@ -73,6 +80,7 @@ struct ContentView: View {
         if (ageInYears == 0 && ageInMonths == 0) {
             ageInMonths = 1
         }
+        self.shouldShowBirthdayScreen = true
     }
     
     func imageSelected() {
