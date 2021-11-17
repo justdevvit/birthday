@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    let birthdayImageFileName = "birthday.png"
-    let birthdayImageFileNameKey = "birthdayImageFileName"
-    let birthdayNameKey = "birthdayName"
-    let birthdayDateKey = "birthdayDate"
-
+    private let birthdayImageFileName = "birthday.png"
+    private let birthdayImageFileNameKey = "birthdayImageFileName"
+    private let birthdayNameKey = "birthdayName"
+    private let birthdayDateKey = "birthdayDate"
+    
+    private var startDate: Date?
+    private var endDate: Date?
     
     @State private var name: String = ""
     @State private var date = Date.distantFuture
@@ -23,6 +25,7 @@ struct ContentView: View {
     
     init() {
         restoreData()
+        updateDatePickerRange()
     }
 
     var body: some View {
@@ -38,7 +41,7 @@ struct ContentView: View {
                             }
                         
                         Text("Birthday")
-                        DatePicker("", selection: $date,  in: ...Date(), displayedComponents: .date)
+                        DatePicker("", selection: $date,  in: (startDate ?? Date())...(endDate ?? Date()), displayedComponents: .date)
                             .padding(.bottom)
                             .datePickerStyle(GraphicalDatePickerStyle())
                             .onChange(of: date) {newValue in
@@ -64,6 +67,13 @@ struct ContentView: View {
                     ImagePicker(image: $inputImage)
             }
         }
+    }
+    
+    // baby period is until 3 age old, so we limit the birthday to 3 years ago max
+    mutating func updateDatePickerRange() {
+        let oneYearInSec: TimeInterval = 86400 * 365
+        endDate = Date()
+        startDate = endDate?.addingTimeInterval(-oneYearInSec * 3)
     }
     
     func showBirthdayScreen() {
