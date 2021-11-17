@@ -16,7 +16,7 @@ struct ContentView: View {
     
     @State private var name: String = ""
     @State private var date = Date.distantFuture
-    @State private var showingImagePicker = false
+    @State private var shouldShowImagePicker = false
     @State private var inputImage: UIImage?
     @State private var image: Image?
     @State private var shouldShowBirthdayScreen = false
@@ -46,7 +46,7 @@ struct ContentView: View {
                             }
                         
                         Button(action: {
-                            self.showingImagePicker = true
+                            self.shouldShowImagePicker = true
                         }) {
                             Text("Tap to select a picture")
                         }
@@ -57,13 +57,10 @@ struct ContentView: View {
                         
                         Button("Show birthday screen", action: showBirthdayScreen).padding(.vertical).disabled(name.isEmpty || self.date == Date.distantFuture)
                         
-                        NavigationLink(destination: birthdayScreenView(),
-                                       isActive: self.$shouldShowBirthdayScreen) {
-                            EmptyView()
-                        }
+                        NavigationLink(destination: birthdayScreenView(), isActive: self.$shouldShowBirthdayScreen) {}
                     }
                 }
-                .sheet(isPresented: $showingImagePicker, onDismiss: imageSelected) {
+                .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
                     ImagePicker(image: $inputImage)
             }
         }
