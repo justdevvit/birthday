@@ -12,10 +12,11 @@ struct ContentView: View {
     private let birthdayImageFileNameKey = "birthdayImageFileName"
     private let birthdayNameKey = "birthdayName"
     private let birthdayDateKey = "birthdayDate"
-    
+    private let appText: String
+
     private var startDate: Date?
     private var endDate: Date?
-    
+        
     @State private var name: String = ""
     @State private var date = Date.distantFuture
     @State private var shouldShowImagePicker = false
@@ -24,48 +25,79 @@ struct ContentView: View {
     @State private var shouldShowBirthdayScreen = false
     
     init() {
+        appText = "Happy Birthday!"
         restoreData()
         updateDatePickerRange()
     }
-
+    
+    var appNameView: some View {
+        Text(appText)
+    }
+    
+    var nameView: some View {
+        TextField("Please type in the baby name", text:$name)
+            .padding(.bottom)
+            .multilineTextAlignment(TextAlignment.center)
+            .onChange(of: name) {newValue in
+                saveName()
+            }
+    }
+    
+    var datePickerTitleView: some View {
+        Text("Please update Birthday:")
+    }
+    
+    var datePickerView: some View {
+        DatePicker("", selection: $date,  in: (startDate ?? Date())...(endDate ?? Date()), displayedComponents: .date)
+            .padding(.bottom)
+            .datePickerStyle(GraphicalDatePickerStyle())
+            .onChange(of: date) {newValue in
+                saveDate()
+            }
+    }
+    
+    var uploadPictureButtonView: some View {
+        Button("Tap to upload a picture", action: {
+            self.shouldShowImagePicker = true
+        })
+    }
+    
+    var imageView: some View {
+        image?.resizable().scaledToFill().clipped()
+    }
+    
+    var showBirthdayScreenButtonView: some View {
+        Button("Show birthday screen", action: showBirthdayScreen)
+    }
+    
     var body: some View {
         NavigationView {
             ScrollView {
-                    VStack {
-                        Text("Happy Birthday!")
-                            .padding(.bottom)
-                        
-                        TextField("Please type in the baby name", text: $name).padding(.bottom).multilineTextAlignment(TextAlignment.center)
-                            .onChange(of: name) {newValue in
-                                saveName()
-                            }
-                        
-                        Text("Birthday")
-                        DatePicker("", selection: $date,  in: (startDate ?? Date())...(endDate ?? Date()), displayedComponents: .date)
-                            .padding(.bottom)
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .onChange(of: date) {newValue in
-                                saveDate()
-                            }
-                        
-                        Button(action: {
-                            self.shouldShowImagePicker = true
-                        }) {
-                            Text("Tap to select a picture")
-                        }
-                        
-                        if image != nil {
-                            image?.resizable().scaledToFit()
-                        }
-                        
-                        Button("Show birthday screen", action: showBirthdayScreen).padding(.vertical).disabled(name.isEmpty || self.date == Date.distantFuture)
-                        
-                        NavigationLink(destination: birthdayScreenView(), isActive: self.$shouldShowBirthdayScreen) {}
+                VStack(spacing:0) {
+                    Spacer()
+                    Divider()
+                    appNameView
+                        .padding(.vertical)
+                    nameView
+                    datePickerTitleView
+                    datePickerView
+                    uploadPictureButtonView
+                    imageView
+                    showBirthdayScreenButtonView
+                        .padding(.vertical)
+                        .disabled(name.isEmpty || self.date == Date.distantFuture)
+                    
+                    NavigationLink(
+                                destination: birthdayScreenView(),
+                                isActive: self.$shouldShowBirthdayScreen
+                            ) {
                     }
                 }
-                .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
-                    ImagePicker(image: $inputImage)
+                .navigationBarHidden(true)
             }
+        }
+        .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
+                ImagePicker(image: $inputImage)
         }
     }
     
