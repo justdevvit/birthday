@@ -66,7 +66,7 @@ struct ContentView: View {
     
     var uploadPictureButtonView: some View {
         Button("Tap to upload a picture", action: {
-            self.shouldShowImagePicker = true
+            shouldShowImagePicker = true
         })
     }
     
@@ -93,11 +93,11 @@ struct ContentView: View {
                     imageView
                     showBirthdayScreenButtonView
                         .padding(.vertical)
-                        .disabled(name.isEmpty || self.date == Date.distantFuture)
+                        .disabled(name.isEmpty || date == Date.distantFuture)
                     
                     NavigationLink(
                                 destination: birthdayScreenView(birthdayDetails: birthdayDetails),
-                                isActive: self.$shouldShowBirthdayScreen
+                                isActive: $shouldShowBirthdayScreen
                             ) {
                     }
                 }
@@ -121,7 +121,7 @@ struct ContentView: View {
     func showBirthdayScreen() {
         let today = Date()
         let age = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
-        self.shouldShowBirthdayScreen = true
+        shouldShowBirthdayScreen = true
         birthdayDetails = BirthdayDetails(name: name, years: age.year ?? 0, months: age.month ?? 0, babyUIImage: inputImage)
     }
     
@@ -131,7 +131,7 @@ struct ContentView: View {
     }
     
     func displayImage() {
-        guard let wrappedInputImage = self.inputImage else {
+        guard let wrappedInputImage = inputImage else {
             return
         }
         image = Image(uiImage: wrappedInputImage)
@@ -139,11 +139,11 @@ struct ContentView: View {
     
     // Store Data
     func saveName() {
-        UserDefaults.standard.set(self.name, forKey: birthdayNameKey)
+        UserDefaults.standard.set(name, forKey: birthdayNameKey)
     }
     
     func saveDate() {
-        UserDefaults.standard.set(self.date, forKey: birthdayDateKey)
+        UserDefaults.standard.set(date, forKey: birthdayDateKey)
     }
     
     func saveImage() {
@@ -177,7 +177,7 @@ struct ContentView: View {
     
     mutating func loadName() {
         if let name: String = UserDefaults.standard.value(forKey: birthdayNameKey) as? String {
-            self._name = State(initialValue: name)
+            _name = State(initialValue: name)
         } else {
             print("load name failed")
         }
@@ -185,7 +185,7 @@ struct ContentView: View {
     
     mutating func loadDate() {
         if let date: Date = UserDefaults.standard.value(forKey: birthdayDateKey) as? Date {
-            self._date = State(initialValue: date)
+            _date = State(initialValue: date)
         } else {
             print("load date failed")
         }
@@ -196,9 +196,9 @@ struct ContentView: View {
             // Create URL
             let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             let url = documents.appendingPathComponent(urlStr as! String)
-            if let data = try? Data(contentsOf: url),
-               let loaded = UIImage(data: data) {
-                self._image = State(initialValue: Image(uiImage: loaded))
+            if let data = try? Data(contentsOf: url) {
+                _inputImage = State(initialValue:UIImage(data: data))
+                _image =  State(initialValue:Image(uiImage: inputImage!))
             } else {
                 print("load Image failed")
             }
