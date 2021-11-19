@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+struct BirthdayDetails {
+    var name: String
+    var years: Int
+    var months: Int
+    var babyUIImage: UIImage?
+}
+
 struct ContentView: View {
     private let birthdayImageFileName = "birthday.png"
     private let birthdayImageFileNameKey = "birthdayImageFileName"
@@ -16,7 +23,8 @@ struct ContentView: View {
 
     private var startDate: Date?
     private var endDate: Date?
-        
+    
+    @State private var birthdayDetails: BirthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
     @State private var name: String = ""
     @State private var date = Date.distantFuture
     @State private var shouldShowImagePicker = false
@@ -88,7 +96,7 @@ struct ContentView: View {
                         .disabled(name.isEmpty || self.date == Date.distantFuture)
                     
                     NavigationLink(
-                                destination: birthdayScreenView(),
+                                destination: birthdayScreenView(birthdayDetails: birthdayDetails),
                                 isActive: self.$shouldShowBirthdayScreen
                             ) {
                     }
@@ -103,23 +111,18 @@ struct ContentView: View {
     
     // baby period is until 3 age old, so we limit the birthday to 3 years ago max
     mutating func updateDatePickerRange() {
-        let oneYearInSec: TimeInterval = 86400 * 365
+        let oneDayInSec: TimeInterval = 86400
+        let oneYearInSec: TimeInterval = oneDayInSec * 365 // add one more day so 3 year old will be included in the range and won't be out of boundaries
+        let birthdateRange = oneYearInSec * 3 + oneDayInSec
         endDate = Date()
-        startDate = endDate?.addingTimeInterval(-oneYearInSec * 3)
+        startDate = endDate?.addingTimeInterval(-birthdateRange)
     }
     
     func showBirthdayScreen() {
         let today = Date()
-        let diffs = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
-        
-        let ageInYears = diffs.year
-        var ageInMonths = diffs.month
-        
-        // for baby that was born this month we'll ceil to 1 month for display purpose (since there is no days resolution)
-        if (ageInYears == 0 && ageInMonths == 0) {
-            ageInMonths = 1
-        }
+        let age = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
         self.shouldShowBirthdayScreen = true
+        birthdayDetails = BirthdayDetails(name: name, years: age.year ?? 0, months: age.month ?? 0, babyUIImage: inputImage)
     }
     
     func imageSelected() {

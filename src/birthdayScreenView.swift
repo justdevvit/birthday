@@ -8,46 +8,67 @@
 import SwiftUI
 
 struct birthdayScreenView: View {
-    let backgroundImage: Image
-    let ageTextPrefix: String
-    let leftSwirlsImage: Image
-    let ageImage: Image
-    let rightSwirlsImage: Image
-    let ageTextSuffix: String
+    var ageTextPrefix: String = ""
+    var ageTextSuffix: String = ""
     var babyUIImage: UIImage?
     var babyImage: Image?
+    var ageImage: Image?
     var cameraIconUIImage: UIImage?
     var cameraIconImage: Image?
+    
+    let backgroundImage: Image
+    let leftSwirlsImage: Image
+    let rightSwirlsImage: Image
     let nanitLogoImage: Image
     let shareButtonText: String
     let shareButtonImage: Image
     
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     
+    var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
+    
+    init(birthdayDetails: BirthdayDetails) {
+        self.init()
+        self.birthdayDetails = birthdayDetails
+        
+        let name = birthdayDetails.name
+        self.ageTextPrefix = "TODAY " + name + " IS"
+        var timeUnitsName: String
+        var timeUnitsNumber: Int
+        let years = birthdayDetails.years
+        var months = birthdayDetails.months
+        // for baby that was born this month we'll ceil to 1 month for display purpose (since there is no days resolution)
+        if (years == 0 && months == 0) {
+            months = 1
+        }
+        if (years == 0) {
+            timeUnitsName = "MONTH"
+            timeUnitsNumber = months
+        } else {
+            timeUnitsName = "YEAR"
+            timeUnitsNumber =  years
+        }
+        self.ageTextSuffix = timeUnitsName + " OLD!"
+        self.ageImage = Image(String(timeUnitsNumber))
+        
+        babyUIImage = birthdayDetails.babyUIImage ?? UIImage(named: "defaultPlaceHolderBlue")
+        guard let wrappedbabyUIImage = babyUIImage else {
+            return
+        }
+        babyImage = Image(uiImage: wrappedbabyUIImage)
+    }
+    
     init() {
-        // TODO: implement ABC Test & age text,image logic
+        // TODO: implement ABC Test
         backgroundImage = Image("iOsBgElephant")
-        ageTextPrefix = "TODAY CRISTIANO RONALDO IS"
-        ageTextSuffix = "MONTH OLD"
-        ageImage = Image("1")
-
         leftSwirlsImage = Image("leftSwirls")
         rightSwirlsImage = Image("rightSwirls")
         nanitLogoImage = Image("nanitLogo")
         shareButtonText = "Share the news"
         shareButtonImage = Image("shareWhiteSmall")
         
-        babyUIImage = UIImage(named: "defaultPlaceHolderBlue")
-        guard let wrappedbabyUIImage = babyUIImage else {
-            return
-        }
-        babyImage = Image(uiImage: wrappedbabyUIImage)
-        
         cameraIconUIImage = UIImage(named: "cameraIconBlue")
-        guard let wrappedCameraIconUIImage = cameraIconUIImage else {
-            return
-        }
-        cameraIconImage = Image(uiImage: wrappedCameraIconUIImage)
+        cameraIconImage = Image(uiImage: cameraIconUIImage!)
     }
     
     var btnBack : some View {
@@ -64,7 +85,9 @@ struct birthdayScreenView: View {
                 .padding(.bottom, 13)
             HStack(spacing: 0) {
                 leftSwirlsImage
+                    .padding(.trailing, 22)
                 ageImage
+                    .padding(.trailing, 22)
                 rightSwirlsImage
             }
             .padding(.bottom, 14)
@@ -75,8 +98,8 @@ struct birthdayScreenView: View {
     var imgAndLogAndShareView: some View {
         VStack(spacing:0) {
             ZStack {
-                babyImage?
-                    .resizable().scaledToFill().clipped()
+                babyImage!
+                    .resizable().scaledToFill().clipped().clipShape(Circle())
                 cameraIconImage
                     .offset(x: cameraIconX(), y: cameraIconY())
             }
