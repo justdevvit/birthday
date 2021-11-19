@@ -23,6 +23,10 @@ struct birthdayScreenView: View {
     let shareButtonText: String
     let shareButtonImage: Image
     
+    //  temporary limit baby image size due to cameraIconImage offest issue
+    let babyImageWidth = 225.0
+    let babyImageHeight = 225.0
+    
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     
     var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
@@ -98,8 +102,12 @@ struct birthdayScreenView: View {
     var imgAndLogAndShareView: some View {
         VStack(spacing:0) {
             ZStack {
-                babyImage!
-                    .resizable().scaledToFill().clipped().clipShape(Circle())
+                babyImage?
+                    .resizable()
+                    .aspectRatio(1, contentMode: .fill)
+                    .clipShape(Circle())
+                    .clipped()
+                    .frame(width: babyImageWidth, height: babyImageHeight, alignment: .center)
                 cameraIconImage
                     .offset(x: cameraIconX(), y: cameraIconY())
             }
@@ -152,22 +160,16 @@ struct birthdayScreenView: View {
         }
     }
     
-    func babyImageSize() -> CGSize {
-        return babyUIImage?.size ?? CGSize.zero
-    }
-    
     func cameraIconImageSize() -> CGSize {
         return cameraIconUIImage?.size ?? CGSize.zero
     }
     
     func cameraIconX() -> CGFloat {
-        let babyImageWidth = babyImageSize().width,
-            cameraIconImageWidth = cameraIconImageSize().width
+        let cameraIconImageWidth = cameraIconImageSize().width
         return babyImageWidth/2 - cameraIconImageWidth/2
     }
     
     func cameraIconY() -> CGFloat {
-        let babyImageHeight = babyImageSize().height
         return -babyImageHeight/4
     }
     
