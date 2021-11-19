@@ -86,6 +86,7 @@ struct birthdayScreenView: View {
     var ageTextSectionView: some View {
         VStack(spacing:0) {
             Text(ageTextPrefix)
+                .frame(width: 226, height: 50, alignment: .center)
                 .padding(.bottom, 13)
             HStack(spacing: 0) {
                 leftSwirlsImage
@@ -96,6 +97,7 @@ struct birthdayScreenView: View {
             }
             .padding(.bottom, 14)
             Text(ageTextSuffix)
+                .frame(width: 226, height: 25, alignment: .center)
         }
     }
     
@@ -125,6 +127,7 @@ struct birthdayScreenView: View {
                 shareButtonImage.renderingMode(.original)
                     .padding(.trailing, 5)
             }
+            .frame(width: 179, height: 42, alignment: .center)
             .background(Capsule().fill(Colors.blush))
             .padding(.bottom, 88)
         }
