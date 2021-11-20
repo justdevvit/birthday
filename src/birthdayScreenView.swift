@@ -147,26 +147,21 @@ struct birthdayScreenView: View {
     }
     
     var body: some View {
-        GeometryReader { gr in
-            ScrollView {
-                ZStack {
-                    backgroundImage
-                        .resizable().scaledToFill().clipped()
-                    VStack(spacing:0) {
-                        Spacer()
-                        Divider()
-                        spaceView
-                        ageTextSectionView
-                        spaceView
-                        babyImageView
-                        logoImageView
-                        shareView
-                    }
-                    .frame(minWidth: gr.size.width, minHeight: gr.size.height)
-                    .navigationBarBackButtonHidden(true)
-                    .navigationBarItems(leading: btnBack)
-                    .navigationBarTitleDisplayMode(.inline)
+        ScrollView {
+            ZStack {
+                backgroundImage
+                    .resizable().scaledToFill()
+                VStack(spacing:0) {
+                    spaceView
+                    ageTextSectionView
+                    spaceView
+                    babyImageView
+                    logoImageView
+                    shareView
                 }
+                .navigationBarBackButtonHidden(true)
+                .navigationBarItems(leading: btnBack)
+                .navigationBarTitleDisplayMode(.inline)
             }
         }
     }
