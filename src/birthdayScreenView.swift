@@ -36,7 +36,7 @@ struct birthdayScreenView: View {
         self.birthdayDetails = birthdayDetails
         
         let name = birthdayDetails.name
-        self.ageTextPrefix = "TODAY " + name + " IS"
+        ageTextPrefix = "TODAY " + name + " IS"
         var timeUnitsName: String
         var timeUnitsNumber: Int
         let years = birthdayDetails.years
@@ -52,8 +52,8 @@ struct birthdayScreenView: View {
             timeUnitsName = "YEAR"
             timeUnitsNumber =  years
         }
-        self.ageTextSuffix = timeUnitsName + " OLD!"
-        self.ageImage = Image(String(timeUnitsNumber))
+        ageTextSuffix = timeUnitsName + " OLD!"
+        ageImage = Image(String(timeUnitsNumber))
         
         babyUIImage = birthdayDetails.babyUIImage ?? UIImage(named: "defaultPlaceHolderBlue")
         guard let wrappedbabyUIImage = babyUIImage else {
@@ -77,7 +77,7 @@ struct birthdayScreenView: View {
     
     var btnBack : some View {
         Button(action: {
-        self.presentationMode.wrappedValue.dismiss()
+        presentationMode.wrappedValue.dismiss()
         }) {
             Image("arrowBackBlue")
         }
@@ -101,7 +101,7 @@ struct birthdayScreenView: View {
         }
     }
     
-    var imgAndLogAndShareView: some View {
+    var babyImageView: some View {
         VStack(spacing:0) {
             ZStack {
                 babyImage?
@@ -115,22 +115,28 @@ struct birthdayScreenView: View {
             }
             .padding(.bottom, 15)
             .padding(.horizontal, 50)
-            nanitLogoImage
-                .padding(.bottom, 20)
-            Button(action: share) {
-                Text(shareButtonText)
-                    .font(Fonts.regular)
-                    .multilineTextAlignment(TextAlignment.trailing)
-                    .foregroundColor(.white)
-                    .padding(.leading, 21)
-                    .padding(.vertical, 11)
-                shareButtonImage.renderingMode(.original)
-                    .padding(.trailing, 5)
-            }
-            .frame(width: 179, height: 42, alignment: .center)
-            .background(Capsule().fill(Colors.blush))
-            .padding(.bottom, 88)
         }
+    }
+    
+    var logoImageView: some View {
+        nanitLogoImage
+            .padding(.bottom, 20)
+    }
+    
+    var shareView: some View {
+        Button(action: share) {
+            Text(shareButtonText)
+                .font(Fonts.regular)
+                .multilineTextAlignment(TextAlignment.trailing)
+                .foregroundColor(.white)
+                .padding(.leading, 21)
+                .padding(.vertical, 11)
+            shareButtonImage.renderingMode(.original)
+                .padding(.trailing, 5)
+        }
+        .frame(width: 179, height: 42, alignment: .center)
+        .background(Capsule().fill(Colors.blush))
+        .padding(.bottom, 88)
     }
     
     var spaceView: some View {
@@ -152,7 +158,9 @@ struct birthdayScreenView: View {
                         spaceView
                         ageTextSectionView
                         spaceView
-                        imgAndLogAndShareView
+                        babyImageView
+                        logoImageView
+                        shareView
                     }
                     .frame(minWidth: gr.size.width, minHeight: gr.size.height)
                     .navigationBarBackButtonHidden(true)
