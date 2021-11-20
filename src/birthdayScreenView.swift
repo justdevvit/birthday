@@ -7,6 +7,27 @@
 
 import SwiftUI
 
+struct SizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
+struct SizeModifier: ViewModifier {
+    private var sizeView: some View {
+        GeometryReader { gr in
+            Color.clear
+            .preference(key: SizePreferenceKey.self, value: gr.size)
+        }
+    }
+
+    func body(content: Content) -> some View {
+        content.background(sizeView)
+    }
+}
+
 struct birthdayScreenView: View {
     var ageTextPrefix: String = ""
     var ageTextSuffix: String = ""
@@ -23,10 +44,9 @@ struct birthdayScreenView: View {
     let shareButtonText: String
     let shareButtonImage: Image
     
-    //  temporary limit baby image size due to cameraIconImage offest issue
-    let babyImageWidth = 225.0
-    let babyImageHeight = 225.0
-    
+    @State private var babyImageWidth = 0.0
+    @State private var babyImageHeight = 0.0
+
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     
     var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
@@ -109,7 +129,11 @@ struct birthdayScreenView: View {
                     .aspectRatio(1, contentMode: .fill)
                     .clipShape(Circle())
                     .clipped()
-                    .frame(width: babyImageWidth, height: babyImageHeight, alignment: .center)
+                    .modifier(SizeModifier())
+                    .onPreferenceChange(SizePreferenceKey.self) {size in
+                        babyImageWidth = size.width
+                        babyImageHeight = size.height
+                    }
                 cameraIconImage
                     .offset(x: cameraIconX(), y: cameraIconY())
             }
@@ -166,17 +190,12 @@ struct birthdayScreenView: View {
         }
     }
     
-    func cameraIconImageSize() -> CGSize {
-        return cameraIconUIImage?.size ?? CGSize.zero
-    }
-    
     func cameraIconX() -> CGFloat {
-        let cameraIconImageWidth = cameraIconImageSize().width
-        return babyImageWidth/2 - cameraIconImageWidth/2
+        return babyImageWidth/2 * sin(Double.pi/4) // x = radius * sin(angle)
     }
     
     func cameraIconY() -> CGFloat {
-        return -babyImageHeight/4
+        return -babyImageWidth/2 * cos(Double.pi/4) // y = - radius * cos(angle)
     }
     
     func share() {
