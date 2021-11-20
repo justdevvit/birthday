@@ -107,6 +107,7 @@ struct ContentView: View {
         .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
                 ImagePicker(image: $inputImage)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     // baby period is until 3 age old, so we limit the birthday to 3 years ago max
