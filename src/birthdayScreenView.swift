@@ -28,6 +28,23 @@ struct SizeModifier: ViewModifier {
     }
 }
 
+extension View {
+    func snapshot() -> UIImage {
+        let controller = UIHostingController(rootView: self)
+        let view = controller.view
+
+        let targetSize = controller.view.intrinsicContentSize
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        view?.backgroundColor = .clear
+
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+
+        return renderer.image { _ in
+            view?.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        }
+    }
+}
+
 struct birthdayScreenView: View {
     private let backgroundImage: Image
     private let leftSwirlsImage: Image
@@ -41,15 +58,18 @@ struct birthdayScreenView: View {
     private var ageImage: Image?
     private var cameraIconUIImage: UIImage?
     private var cameraIconImage: Image?
-    
+        
     @State private var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
     @State private var babyUIImage: UIImage?
     @State private var babyImage: Image?
+    @State private var cameraIconX: CGFloat?
+    @State private var cameraIconY: CGFloat?
     @State private var babyImageWidth = 0.0
     @State private var babyImageHeight = 0.0
     @State private var shouldShowImagePicker = false
     @State private var shouldShowActionScheet = false
     @State private var shouldShowCamera = false
+    @State private var shouldShareImage = false
 
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
         
@@ -124,27 +144,26 @@ struct birthdayScreenView: View {
     }
     
     var babyImageView: some View {
-        VStack(spacing:0) {
-            ZStack {
-                babyImage?
-                    .resizable()
-                    .aspectRatio(1, contentMode: .fill)
-                    .clipShape(Circle())
-                    .clipped()
-                    .modifier(SizeModifier())
-                    .onPreferenceChange(SizePreferenceKey.self) {size in
-                        babyImageWidth = size.width
-                        babyImageHeight = size.height
-                    }
-                cameraIconImage
-                    .offset(x: cameraIconX(), y: cameraIconY())
-                    .onTapGesture {
-                        shouldShowActionScheet = true
-                    }
+        babyImage?
+            .resizable()
+            .aspectRatio(1, contentMode: .fill)
+            .clipShape(Circle())
+            .clipped()
+            .modifier(SizeModifier())
+            .onPreferenceChange(SizePreferenceKey.self) {size in
+                babyImageWidth = size.width
+                babyImageHeight = size.height
+                calcCameraIconX()
+                calcCameraIconY()
             }
-            .padding(.bottom, 15)
-            .padding(.horizontal, 50)
-        }
+    }
+    var cameraIconImageView: some View {
+        cameraIconImage
+            .offset(x: cameraIconX ?? 0.0, y: cameraIconY ?? 0.0)
+            .onTapGesture {
+                shouldShowActionScheet = true
+            }
+            .opacity(shouldShareImage ? 0 : 1)
     }
     
     var logoImageView: some View {
@@ -152,7 +171,7 @@ struct birthdayScreenView: View {
             .padding(.bottom, 20)
     }
     
-    var shareView: some View {
+    var shareButtonView: some View {
         Button(action: share) {
             Text(shareButtonText)
                 .font(Fonts.regular)
@@ -163,6 +182,7 @@ struct birthdayScreenView: View {
                 .padding(.trailing, 5)
         }
         .background(Capsule().fill(Colors.blush))
+        .opacity(shouldShareImage ? 0 : 1)
     }
     
     var spaceView: some View {
@@ -188,14 +208,20 @@ struct birthdayScreenView: View {
                     spaceView
                     ageTextSectionView
                     spaceView
-                    babyImageView
+                    ZStack {
+                        babyImageView
+                        cameraIconImageView
+                    }
+                    .padding(.bottom, 15)
+                    .padding(.horizontal, 50)
                     logoImageView
-                    shareView
+                    shareButtonView
                     bottomSpaceView
                 }
                 .navigationBarBackButtonHidden(true)
                 .navigationBarItems(leading: btnBack)
                 .navigationBarTitleDisplayMode(.inline)
+                .navigationBarHidden(shouldShareImage)
             }
         }
         .actionSheet(isPresented: $shouldShowActionScheet) { () -> ActionSheet in
@@ -212,12 +238,18 @@ struct birthdayScreenView: View {
         }
     }
     
-    func cameraIconX() -> CGFloat {
-        return babyImageWidth/2 * sin(Double.pi/4) // x = radius * sin(angle)
+    func calcCameraIconX() {
+        if (cameraIconX != nil) {
+            return
+        }
+        cameraIconX = babyImageWidth/2 * sin(Double.pi/4) // x = radius * sin(angle)
     }
     
-    func cameraIconY() -> CGFloat {
-        return -babyImageWidth/2 * cos(Double.pi/4) // y = - radius * cos(angle)
+    func calcCameraIconY() {
+        if (cameraIconY != nil) {
+            return
+        }
+        cameraIconY = -babyImageWidth/2 * cos(Double.pi/4) // y = - radius * cos(angle)
     }
     
     func imageSelected() {
@@ -233,7 +265,12 @@ struct birthdayScreenView: View {
     }
     
     func share() {
-        print("share")
+        shouldShareImage = true
+        let processedImage = body.snapshot()
+        let activityVC = UIActivityViewController(activityItems: [processedImage], applicationActivities: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true, completion: {
+            shouldShareImage = false
+        })
     }
 }
 
