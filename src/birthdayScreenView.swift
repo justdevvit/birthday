@@ -156,7 +156,6 @@ struct birthdayScreenView: View {
         Button(action: share) {
             Text(shareButtonText)
                 .font(Fonts.regular)
-                .multilineTextAlignment(TextAlignment.trailing)
                 .foregroundColor(.white)
                 .padding(.leading, 21)
                 .padding(.vertical, 11)
@@ -165,6 +164,20 @@ struct birthdayScreenView: View {
         }
         .background(Capsule().fill(Colors.blush))
     }
+    
+    var spaceView: some View {
+        VStack(spacing:0) {
+            EmptyView()
+        }
+        .frame(minHeight: 20, maxHeight: .infinity)
+    }
+    
+    var bottomSpaceView: some View {
+        VStack(spacing:0) {
+            EmptyView()
+        }
+        .frame(minHeight: 80, maxHeight: .infinity)
+    }
 
     var body: some View {
         ScrollView {
@@ -172,13 +185,13 @@ struct birthdayScreenView: View {
                 backgroundImage
                     .resizable().scaledToFill()
                 VStack(spacing:0) {
-                    Spacer(minLength: 20)
+                    spaceView
                     ageTextSectionView
-                    Spacer(minLength: 20)
+                    spaceView
                     babyImageView
                     logoImageView
                     shareView
-                    Spacer(minLength: 80)
+                    bottomSpaceView
                 }
                 .navigationBarBackButtonHidden(true)
                 .navigationBarItems(leading: btnBack)
