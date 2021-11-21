@@ -163,30 +163,22 @@ struct birthdayScreenView: View {
             shareButtonImage.renderingMode(.original)
                 .padding(.trailing, 5)
         }
-        .frame(width: 179, height: 42, alignment: .center)
         .background(Capsule().fill(Colors.blush))
-        .padding(.bottom, 88)
     }
-    
-    var spaceView: some View {
-        VStack(spacing:0) {
-            EmptyView()
-        }
-        .frame(minHeight: 20, maxHeight: .infinity)
-    }
-    
+
     var body: some View {
         ScrollView {
             ZStack {
                 backgroundImage
                     .resizable().scaledToFill()
                 VStack(spacing:0) {
-                    spaceView
+                    Spacer(minLength: 20)
                     ageTextSectionView
-                    spaceView
+                    Spacer(minLength: 20)
                     babyImageView
                     logoImageView
                     shareView
+                    Spacer(minLength: 80)
                 }
                 .navigationBarBackButtonHidden(true)
                 .navigationBarItems(leading: btnBack)
