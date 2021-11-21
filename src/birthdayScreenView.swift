@@ -29,28 +29,30 @@ struct SizeModifier: ViewModifier {
 }
 
 struct birthdayScreenView: View {
-    var ageTextPrefix: String = ""
-    var ageTextSuffix: String = ""
-    var babyUIImage: UIImage?
-    var babyImage: Image?
-    var ageImage: Image?
-    var cameraIconUIImage: UIImage?
-    var cameraIconImage: Image?
+    private let backgroundImage: Image
+    private let leftSwirlsImage: Image
+    private let rightSwirlsImage: Image
+    private let nanitLogoImage: Image
+    private let shareButtonText: String
+    private let shareButtonImage: Image
     
-    let backgroundImage: Image
-    let leftSwirlsImage: Image
-    let rightSwirlsImage: Image
-    let nanitLogoImage: Image
-    let shareButtonText: String
-    let shareButtonImage: Image
+    private var ageTextPrefix: String = ""
+    private var ageTextSuffix: String = ""
+    private var ageImage: Image?
+    private var cameraIconUIImage: UIImage?
+    private var cameraIconImage: Image?
     
+    @State private var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
+    @State private var babyUIImage: UIImage?
+    @State private var babyImage: Image?
     @State private var babyImageWidth = 0.0
     @State private var babyImageHeight = 0.0
+    @State private var shouldShowImagePicker = false
+    @State private var shouldShowActionScheet = false
+    @State private var shouldShowCamera = false
 
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-    
-    var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
-    
+        
     init(birthdayDetails: BirthdayDetails) {
         self.init()
         self.birthdayDetails = birthdayDetails
@@ -92,7 +94,7 @@ struct birthdayScreenView: View {
         shareButtonImage = Image("shareWhiteSmall")
         
         cameraIconUIImage = UIImage(named: "cameraIconBlue")
-        cameraIconImage = Image(uiImage: cameraIconUIImage!)
+        cameraIconImage = (cameraIconUIImage != nil) ? Image(uiImage: cameraIconUIImage!) : nil
     }
     
     var btnBack : some View {
@@ -136,6 +138,9 @@ struct birthdayScreenView: View {
                     }
                 cameraIconImage
                     .offset(x: cameraIconX(), y: cameraIconY())
+                    .onTapGesture {
+                        shouldShowActionScheet = true
+                    }
             }
             .padding(.bottom, 15)
             .padding(.horizontal, 50)
@@ -188,6 +193,18 @@ struct birthdayScreenView: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .actionSheet(isPresented: $shouldShowActionScheet) { () -> ActionSheet in
+            ActionSheet(title: Text("Please choose mode"), buttons: [ActionSheet.Button.default(Text("Camera"), action: {
+                shouldShowImagePicker = true
+                shouldShowCamera = true
+            }), ActionSheet.Button.default(Text("Photo Library"), action: {
+                shouldShowImagePicker = true
+                shouldShowCamera = false
+            }), ActionSheet.Button.cancel()])
+        }
+        .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
+            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker)
+        }
     }
     
     func cameraIconX() -> CGFloat {
@@ -196,6 +213,18 @@ struct birthdayScreenView: View {
     
     func cameraIconY() -> CGFloat {
         return -babyImageWidth/2 * cos(Double.pi/4) // y = - radius * cos(angle)
+    }
+    
+    func imageSelected() {
+        displayImage()
+        saveImage(babyUIImage: babyUIImage)
+    }
+    
+    func displayImage() {
+        guard let wrappedBabyUIImage = babyUIImage else {
+            return
+        }
+        babyImage = Image(uiImage: wrappedBabyUIImage)
     }
     
     func share() {

@@ -13,3 +13,8 @@ struct Colors {
 struct Fonts {
     static let regular = Font.custom("BentonSans-Regular", size: 16)
 }
+
+let birthdayImageFileName = "birthday.png"
+let birthdayImageFileNameKey = "birthdayImageFileName"
+let birthdayNameKey = "birthdayName"
+let birthdayDateKey = "birthdayDate"
