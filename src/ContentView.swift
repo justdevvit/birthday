@@ -26,6 +26,7 @@ struct ContentView: View {
     @State private var shouldShowImagePicker = false
     @State private var shouldShowActionScheet = false
     @State private var shouldShowCamera = false
+    @State private var didCancelImagePicker = false
     @State private var babyUIImage: UIImage?
     @State private var babyImage: Image?
     @State private var shouldShowBirthdayScreen = false
@@ -111,7 +112,7 @@ struct ContentView: View {
             }), ActionSheet.Button.cancel()])
         }
         .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
-            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker)
+            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker, didCancel: $didCancelImagePicker)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
@@ -132,6 +133,9 @@ struct ContentView: View {
     }
     
     func imageSelected() {
+        if (didCancelImagePicker) {
+            return
+        }
         displayImage()
         saveImage(babyUIImage: babyUIImage)
     }

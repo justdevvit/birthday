@@ -45,20 +45,24 @@ extension View {
     }
 }
 
+enum ABCfield {
+    case backgroundImageABC
+    case babyImagePlaceholderABC
+    case cameraImagePlaceholderABC
+}
+
 struct birthdayScreenView: View {
-    private let backgroundImage: Image
     private let leftSwirlsImage: Image
     private let rightSwirlsImage: Image
     private let nanitLogoImage: Image
     private let shareButtonText: String
     private let shareButtonImage: Image
     
-    private var ageTextPrefix: String = ""
-    private var ageTextSuffix: String = ""
-    private var ageImage: Image?
-    private var cameraIconUIImage: UIImage?
-    private var cameraIconImage: Image?
-        
+    @State private var ageTextPrefix: String = ""
+    @State private var ageTextSuffix: String = ""
+    @State private var ageImage: Image?
+    @State private var cameraIconUIImage: UIImage?
+    @State private var cameraIconImage: Image?
     @State private var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
     @State private var babyUIImage: UIImage?
     @State private var babyImage: Image?
@@ -69,12 +73,17 @@ struct birthdayScreenView: View {
     @State private var shouldShowImagePicker = false
     @State private var shouldShowActionScheet = false
     @State private var shouldShowCamera = false
+    @State private var didCancelImagePicker = false
     @State private var shouldShareImage = false
-
+    @State private var ABCresult: Int?
+    
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
         
     init(birthdayDetails: BirthdayDetails) {
         self.init()
+        
+        calcABC()
+        
         self.birthdayDetails = birthdayDetails
         
         let name = birthdayDetails.name
@@ -97,24 +106,24 @@ struct birthdayScreenView: View {
         ageTextSuffix = timeUnitsName + " OLD!"
         ageImage = Image(String(timeUnitsNumber))
         
-        babyUIImage = birthdayDetails.babyUIImage ?? UIImage(named: "defaultPlaceHolderBlue")
-        guard let wrappedbabyUIImage = babyUIImage else {
+        babyUIImage = birthdayDetails.babyUIImage
+        guard let wrappedBabyUIImage = babyUIImage else {
+            babyUIImage = UIImage(named: fetchViewByABC(field: ABCfield.babyImagePlaceholderABC))
+            guard let wrappedBabyUIDefaultImage = babyUIImage else {
+                return
+            }
+            babyImage = Image(uiImage: wrappedBabyUIDefaultImage)
             return
         }
-        babyImage = Image(uiImage: wrappedbabyUIImage)
+        babyImage = Image(uiImage: wrappedBabyUIImage)
     }
     
     init() {
-        // TODO: implement ABC Test
-        backgroundImage = Image("iOsBgElephant")
         leftSwirlsImage = Image("leftSwirls")
         rightSwirlsImage = Image("rightSwirls")
         nanitLogoImage = Image("nanitLogo")
         shareButtonText = "Share the news"
         shareButtonImage = Image("shareWhiteSmall")
-        
-        cameraIconUIImage = UIImage(named: "cameraIconBlue")
-        cameraIconImage = (cameraIconUIImage != nil) ? Image(uiImage: cameraIconUIImage!) : nil
     }
     
     var btnBack : some View {
@@ -123,6 +132,11 @@ struct birthdayScreenView: View {
         }) {
             Image("arrowBackBlue")
         }
+    }
+    
+    var backgroundImageView: some View {
+        Image(fetchViewByABC(field: ABCfield.backgroundImageABC))
+            .resizable().scaledToFill()
     }
 
     var ageTextSectionView: some View {
@@ -158,7 +172,7 @@ struct birthdayScreenView: View {
             }
     }
     var cameraIconImageView: some View {
-        cameraIconImage
+        Image(fetchViewByABC(field: ABCfield.cameraImagePlaceholderABC))
             .offset(x: cameraIconX ?? 0.0, y: cameraIconY ?? 0.0)
             .onTapGesture {
                 shouldShowActionScheet = true
@@ -198,12 +212,25 @@ struct birthdayScreenView: View {
         }
         .frame(minHeight: 80, maxHeight: .infinity)
     }
+    
+    mutating func calcABC() {
+        let numbers = [0, 1, 2]
+        _ABCresult = State(initialValue: numbers.randomElement())
+    }
+    
+    func fetchViewByABC(field: ABCfield) -> String {
+        let ABCdict: [ABCfield: [String]] = [
+            ABCfield.backgroundImageABC : ["iOsBgElephant", "iOsBgFox", "iOsBgPelican"],
+            ABCfield.babyImagePlaceholderABC : ["defaultPlaceHolderYellow", "defaultPlaceHolderGreen", "defaultPlaceHolderBlue"],
+            ABCfield.cameraImagePlaceholderABC : ["cameraIconYellow", "cameraIconGreen", "cameraIconBlue"]
+            ]
+        return ABCdict[field]![ABCresult ?? 0]
+    }
 
     var body: some View {
         ScrollView {
             ZStack {
-                backgroundImage
-                    .resizable().scaledToFill()
+                backgroundImageView
                 VStack(spacing:0) {
                     spaceView
                     ageTextSectionView
@@ -234,7 +261,7 @@ struct birthdayScreenView: View {
             }), ActionSheet.Button.cancel()])
         }
         .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
-            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker)
+            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker, didCancel: $didCancelImagePicker)
         }
     }
     
@@ -253,11 +280,14 @@ struct birthdayScreenView: View {
     }
     
     func imageSelected() {
-        displayImage()
+        if (didCancelImagePicker) {
+            return
+        }
+        displayBabyImage()
         saveImage(babyUIImage: babyUIImage)
     }
     
-    func displayImage() {
+    func displayBabyImage() {
         guard let wrappedBabyUIImage = babyUIImage else {
             return
         }
@@ -276,6 +306,8 @@ struct birthdayScreenView: View {
 
 struct birthdayScreenView_Previews: PreviewProvider {
     static var previews: some View {
-        birthdayScreenView()
+        NavigationView {
+            birthdayScreenView()
+        }
     }
 }
