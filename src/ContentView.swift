@@ -7,152 +7,190 @@
 
 import SwiftUI
 
+class BirthdayDetails: ObservableObject {
+    @Published var name = ""
+    @Published var years = 0
+    @Published var months = 0
+    @Published var babyUIImage: UIImage?
+    @Published var babyImage: Image?
+    @Published var ABCresult = 0
+}
+
 struct ContentView: View {
-    let birthdayImageFileName = "birthday.png"
-    let birthdayImageFileNameKey = "birthdayImageFileName"
-    let birthdayNameKey = "birthdayName"
-    let birthdayDateKey = "birthdayDate"
+    private let appText: String = "Happy Birthday!"
+    private let endDate = Date()
 
-    
-    @State private var name: String = ""
+    @StateObject private var birthdayDetails = BirthdayDetails()
+    @State private var name = ""
     @State private var date = Date.distantFuture
-    @State private var showingImagePicker = false
-    @State private var inputImage: UIImage?
-    @State private var image: Image?
-    @State private var dateWasSet: Bool = false
-    
-    init() {
-        restoreData()
-    }
+    @State private var shouldShowImagePicker = false
+    @State private var shouldShowActionScheet = false
+    @State private var shouldShowCamera = false
+    @State private var didCancelImagePicker = false
+    @State private var babyUIImage: UIImage?
+    @State private var shouldShowBirthdayScreen = false
+    @State private var startDate = Date.distantPast
+    @State private var ABCresult = 0
 
+    var appNameView: some View {
+        Text(appText)
+    }
+    
+    var nameView: some View {
+        TextField("Please type in the baby name", text:$name)
+            .padding(.bottom)
+            .multilineTextAlignment(TextAlignment.center)
+            .onChange(of: name) {newValue in
+                saveName(name: newValue)
+            }
+    }
+    
+    var datePickerTitleView: some View {
+        Text("Please update Birthday:")
+    }
+    
+    var datePickerView: some View {
+        DatePicker("", selection: $date,  in: (startDate...endDate), displayedComponents: .date)
+            .padding(.bottom)
+            .datePickerStyle(GraphicalDatePickerStyle())
+            .onChange(of: date) {newValue in
+                saveDate(date: newValue)
+            }
+            .onAppear {
+                updateDatePickerRange()
+            }
+    }
+    
+    var uploadPictureButtonView: some View {
+        Button("Tap to upload a picture", action: {
+            shouldShowActionScheet = true
+        })
+    }
+    
+    var babyImageView: some View {
+        birthdayDetails.babyImage?
+            .resizable()
+            .scaledToFill()
+            .clipped()
+    }
+    
+    var showBirthdayScreenButtonView: some View {
+        Button("Show birthday screen", action: showBirthdayScreen)
+    }
+    
     var body: some View {
-        ScrollView {
-                    VStack {
-                        Text("Happy Birthday!")
-                            .padding(.vertical)
-                        
-                        TextField("Please type in the baby name", text: $name).padding(.bottom).multilineTextAlignment(TextAlignment.center)
-                            .onChange(of: name) {newValue in
-                                saveName()
-                            }
-                        
-                        Text("Birthday")
-                        DatePicker("", selection: $date,  in: ...Date(), displayedComponents: .date)
-                            .padding(.bottom)
-                            .datePickerStyle(GraphicalDatePickerStyle())
-                            .onChange(of: date) {newValue in
-                                saveDate()
-                            }
-                        
-                        Button(action: {
-                            self.showingImagePicker = true
-                        }) {
-                            Text("Tap to select a picture")
-                        }
-                        
-                        if image != nil {
-                            image?.resizable().scaledToFit()
-                        }
-                        
-                        Button("Show birthday screen", action: showBirthdayScreen).padding(.vertical).disabled(name.isEmpty || self.date == Date.distantFuture)
+        NavigationView {
+            ScrollView {
+                VStack(spacing:0) {
+                    Spacer()
+                    Divider()
+                    appNameView
+                        .padding(.vertical)
+                    nameView
+                    datePickerTitleView
+                    datePickerView
+                    uploadPictureButtonView
+                    babyImageView
+                    showBirthdayScreenButtonView
+                        .padding(.vertical)
+                        .disabled(name.isEmpty || date == Date.distantFuture)
+                    
+                    NavigationLink(
+                                destination: birthdayScreenView(birthdayDetails: birthdayDetails),
+                                isActive: $shouldShowBirthdayScreen
+                            ) {
                     }
                 }
-                .sheet(isPresented: $showingImagePicker, onDismiss: imageSelected) {
-                    ImagePicker(image: $inputImage)
-                }
+                .navigationBarHidden(true)
+            }
+        }
+        .actionSheet(isPresented: $shouldShowActionScheet) { () -> ActionSheet in
+            ActionSheet(title: Text("Please choose mode"), buttons: [ActionSheet.Button.default(Text("Camera"), action: {
+                shouldShowImagePicker = true
+                shouldShowCamera = true
+            }), ActionSheet.Button.default(Text("Photo Library"), action: {
+                shouldShowImagePicker = true
+                shouldShowCamera = false
+            }), ActionSheet.Button.cancel()])
+        }
+        .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
+            ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker, didCancel: $didCancelImagePicker)
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear(perform: {
+            restoreData()
+        })
+    }
+    
+    // baby period is until 3 age old, so we limit the birthday to 3 years ago max
+    func updateDatePickerRange() {
+        let oneDayInSec: TimeInterval = 86400
+        let oneYearInSec: TimeInterval = oneDayInSec * 365 // add one more day so 3 year old will be included in the range and won't be out of boundaries
+        let birthdateRange = oneYearInSec * 3 + oneDayInSec
+        startDate = endDate.addingTimeInterval(-birthdateRange)
     }
     
     func showBirthdayScreen() {
         let today = Date()
-        let diffs = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
-        
-        let ageInYears = diffs.year
-        var ageInMonths = diffs.month
-        
-        // for baby that was born this month we'll ceil to 1 month for display purpose (since there is no days resolution)
-        if (ageInYears == 0 && ageInMonths == 0) {
-            ageInMonths = 1
-        }
+        let age = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
+        shouldShowBirthdayScreen = true
+        birthdayDetails.name = name
+        birthdayDetails.years = age.year ?? 0
+        birthdayDetails.months = age.month ?? 0
+        calcABC()
     }
     
     func imageSelected() {
-        displayImage()
-        saveImage()
-    }
-    
-    func displayImage() {
-        guard let wrappedInputImage = self.inputImage else {
+        if (didCancelImagePicker || babyUIImage == nil) {
             return
         }
-        image = Image(uiImage: wrappedInputImage)
+        birthdayDetails.babyUIImage = babyUIImage
+        displayBabyImage()
+        saveImage(babyUIImage:birthdayDetails.babyUIImage)
     }
     
-    // Store Data
-    func saveName() {
-        UserDefaults.standard.set(self.name, forKey: birthdayNameKey)
-    }
-    
-    func saveDate() {
-        UserDefaults.standard.set(self.date, forKey: birthdayDateKey)
-    }
-    
-    func saveImage() {
-        // Convert to Data
-        if let data = inputImage?.jpegData(compressionQuality: 1.0) {
-            // Create URL
-            let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let url = documents.appendingPathComponent(birthdayImageFileName)
-            
-            // Write to Disk
-            if (try? data.write(to: url)) != nil {
-                // Store image name in User Defaults
-                UserDefaults.standard.set(birthdayImageFileName, forKey: birthdayImageFileNameKey)
-                print("image saved")
-            }
-            else {
-                print("Unable to Write Data to Disk")
-            }
+    func displayBabyImage() {
+        guard let wrappedBabyUIImage = birthdayDetails.babyUIImage else {
+            return
         }
-        else {
-            print("Unable to Parse image to Data")
-        }
+        birthdayDetails.babyImage = Image(uiImage: wrappedBabyUIImage)
     }
 
     // Restore Data
-    mutating func restoreData() {
-        loadName()
-        loadDate()
-        loadImage()
+    func restoreData() {
+        restoreName()
+        restoreDate()
+        restoreImage()
     }
     
-    mutating func loadName() {
-        if let name: String = UserDefaults.standard.value(forKey: birthdayNameKey) as? String {
-            self._name = State(initialValue: name)
+    func restoreName() {
+        if let loadedName: String = loadName() {
+            name = loadedName
         } else {
             print("load name failed")
         }
     }
     
-    mutating func loadDate() {
-        if let date: Date = UserDefaults.standard.value(forKey: birthdayDateKey) as? Date {
-            self._date = State(initialValue: date)
+    func restoreDate() {
+        if let loadedDate: Date = loadDate() {
+            date = loadedDate
         } else {
             print("load date failed")
         }
     }
     
-    mutating func loadImage() {
-        if let urlStr = UserDefaults.standard.value(forKey: birthdayImageFileNameKey) {
-            // Create URL
-            let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let url = documents.appendingPathComponent(urlStr as! String)
-            if let data = try? Data(contentsOf: url),
-               let loaded = UIImage(data: data) {
-                self._image = State(initialValue: Image(uiImage: loaded))
-            } else {
-                print("load Image failed")
-            }
+    func restoreImage() {
+        if let loadedImage: UIImage = loadImage() {
+            birthdayDetails.babyUIImage = loadedImage
+            displayBabyImage()
+        }  else {
+            print("load image failed")
         }
+    }
+    
+    func calcABC() {
+        let numbers = [0, 1, 2]
+        birthdayDetails.ABCresult = numbers.randomElement() ?? 0
     }
 }
     

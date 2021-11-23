@@ -14,7 +14,10 @@
 		9EAB44F62742569E00D01DFF /* birthdayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB44F52742569E00D01DFF /* birthdayTests.swift */; };
 		9EAB45002742569E00D01DFF /* birthdayUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB44FF2742569E00D01DFF /* birthdayUITests.swift */; };
 		9EAB45022742569E00D01DFF /* birthdayUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB45012742569E00D01DFF /* birthdayUITestsLaunchTests.swift */; };
-		9EAB450F2742D27500D01DFF /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAB450E2742D27400D01DFF /* ImagePicker.swift */; };
+		9EE8496E2743FDFE00D37A17 /* birthdayScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE8496D2743FDFE00D37A17 /* birthdayScreenView.swift */; };
+		9EE8497B2745474500D37A17 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE8497A2745474500D37A17 /* Constants.swift */; };
+		9EE8497F274A253A00D37A17 /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE8497E274A253A00D37A17 /* ImagePickerView.swift */; };
+		9EE84985274A922A00D37A17 /* StoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE84984274A922A00D37A17 /* StoreData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +48,10 @@
 		9EAB44FB2742569E00D01DFF /* birthdayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = birthdayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EAB44FF2742569E00D01DFF /* birthdayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = birthdayUITests.swift; sourceTree = "<group>"; };
 		9EAB45012742569E00D01DFF /* birthdayUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = birthdayUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		9EAB450E2742D27400D01DFF /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		9EE8496D2743FDFE00D37A17 /* birthdayScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = birthdayScreenView.swift; sourceTree = "<group>"; };
+		9EE8497A2745474500D37A17 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		9EE8497E274A253A00D37A17 /* ImagePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerView.swift; sourceTree = "<group>"; };
+		9EE84984274A922A00D37A17 /* StoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,8 +103,11 @@
 			isa = PBXGroup;
 			children = (
 				9EAB44E42742569B00D01DFF /* birthdayApp.swift */,
+				9EE84984274A922A00D37A17 /* StoreData.swift */,
+				9EE8497A2745474500D37A17 /* Constants.swift */,
 				9EAB44E62742569B00D01DFF /* ContentView.swift */,
-				9EAB450E2742D27400D01DFF /* ImagePicker.swift */,
+				9EE8496D2743FDFE00D37A17 /* birthdayScreenView.swift */,
+				9EE8497E274A253A00D37A17 /* ImagePickerView.swift */,
 				9EAB44E82742569E00D01DFF /* Assets.xcassets */,
 				9EAB44EA2742569E00D01DFF /* Preview Content */,
 			);
@@ -260,8 +269,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EAB450F2742D27500D01DFF /* ImagePicker.swift in Sources */,
+				9EE8496E2743FDFE00D37A17 /* birthdayScreenView.swift in Sources */,
 				9EAB44E72742569B00D01DFF /* ContentView.swift in Sources */,
+				9EE8497B2745474500D37A17 /* Constants.swift in Sources */,
+				9EE84985274A922A00D37A17 /* StoreData.swift in Sources */,
+				9EE8497F274A253A00D37A17 /* ImagePickerView.swift in Sources */,
 				9EAB44E52742569B00D01DFF /* birthdayApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -350,7 +362,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -405,7 +417,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -426,6 +438,7 @@
 				DEVELOPMENT_TEAM = H66DJC42Q7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Birthday needs access to your camera to take photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -455,6 +468,7 @@
 				DEVELOPMENT_TEAM = H66DJC42Q7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Birthday needs access to your camera to take photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
