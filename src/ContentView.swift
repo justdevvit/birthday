@@ -7,20 +7,20 @@
 
 import SwiftUI
 
-struct BirthdayDetails {
-    var name: String
-    var years: Int
-    var months: Int
-    var babyUIImage: UIImage?
+class BirthdayDetails: ObservableObject {
+    @Published var name = ""
+    @Published var years = 0
+    @Published var months = 0
+    @Published var babyUIImage: UIImage?
+    @Published var babyImage: Image?
+    @Published var ABCresult = 0
 }
 
 struct ContentView: View {
     private let appText: String = "Happy Birthday!"
     private let endDate = Date()
 
-    private var startDate: Date?
-    
-    @State private var birthdayDetails: BirthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
+    @StateObject private var birthdayDetails = BirthdayDetails()
     @State private var name = ""
     @State private var date = Date.distantFuture
     @State private var shouldShowImagePicker = false
@@ -28,14 +28,10 @@ struct ContentView: View {
     @State private var shouldShowCamera = false
     @State private var didCancelImagePicker = false
     @State private var babyUIImage: UIImage?
-    @State private var babyImage: Image?
     @State private var shouldShowBirthdayScreen = false
+    @State private var startDate = Date.distantPast
+    @State private var ABCresult = 0
 
-    init() {
-        restoreData()
-        updateDatePickerRange()
-    }
-    
     var appNameView: some View {
         Text(appText)
     }
@@ -54,11 +50,14 @@ struct ContentView: View {
     }
     
     var datePickerView: some View {
-        DatePicker("", selection: $date,  in: ((startDate ?? Date())...endDate), displayedComponents: .date)
+        DatePicker("", selection: $date,  in: (startDate...endDate), displayedComponents: .date)
             .padding(.bottom)
             .datePickerStyle(GraphicalDatePickerStyle())
             .onChange(of: date) {newValue in
                 saveDate(date: newValue)
+            }
+            .onAppear {
+                updateDatePickerRange()
             }
     }
     
@@ -69,7 +68,10 @@ struct ContentView: View {
     }
     
     var babyImageView: some View {
-        babyImage?.resizable().scaledToFill().clipped()
+        birthdayDetails.babyImage?
+            .resizable()
+            .scaledToFill()
+            .clipped()
     }
     
     var showBirthdayScreenButtonView: some View {
@@ -115,10 +117,13 @@ struct ContentView: View {
             ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker, didCancel: $didCancelImagePicker)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear(perform: {
+            restoreData()
+        })
     }
     
     // baby period is until 3 age old, so we limit the birthday to 3 years ago max
-    mutating func updateDatePickerRange() {
+    func updateDatePickerRange() {
         let oneDayInSec: TimeInterval = 86400
         let oneYearInSec: TimeInterval = oneDayInSec * 365 // add one more day so 3 year old will be included in the range and won't be out of boundaries
         let birthdateRange = oneYearInSec * 3 + oneDayInSec
@@ -129,57 +134,63 @@ struct ContentView: View {
         let today = Date()
         let age = Calendar.current.dateComponents([.year, .month, .day], from: date, to: today)
         shouldShowBirthdayScreen = true
-        birthdayDetails = BirthdayDetails(name: name, years: age.year ?? 0, months: age.month ?? 0, babyUIImage: babyUIImage)
+        birthdayDetails.name = name
+        birthdayDetails.years = age.year ?? 0
+        birthdayDetails.months = age.month ?? 0
+        calcABC()
     }
     
     func imageSelected() {
-        if (didCancelImagePicker) {
+        if (didCancelImagePicker || babyUIImage == nil) {
             return
         }
-        displayImage()
-        saveImage(babyUIImage: babyUIImage)
+        birthdayDetails.babyUIImage = babyUIImage
+        displayBabyImage()
+        saveImage(babyUIImage:birthdayDetails.babyUIImage)
     }
     
-    func displayImage() {
-        guard let wrappedBabyUIImage = babyUIImage else {
+    func displayBabyImage() {
+        guard let wrappedBabyUIImage = birthdayDetails.babyUIImage else {
             return
         }
-        babyImage = Image(uiImage: wrappedBabyUIImage)
+        birthdayDetails.babyImage = Image(uiImage: wrappedBabyUIImage)
     }
 
     // Restore Data
-    mutating func restoreData() {
+    func restoreData() {
         restoreName()
         restoreDate()
         restoreImage()
     }
     
-    mutating func restoreName() {
-        if let name: String = loadName() {
-            _name = State(initialValue: name)
+    func restoreName() {
+        if let loadedName: String = loadName() {
+            name = loadedName
         } else {
             print("load name failed")
         }
     }
     
-    mutating func restoreDate() {
-        if let date: Date = loadDate() {
-            _date = State(initialValue: date)
+    func restoreDate() {
+        if let loadedDate: Date = loadDate() {
+            date = loadedDate
         } else {
             print("load date failed")
         }
     }
     
-    mutating func restoreImage() {
+    func restoreImage() {
         if let loadedImage: UIImage = loadImage() {
-            _babyUIImage = State(initialValue: loadedImage)
-            if (babyUIImage != nil) {
-                _babyImage = State(initialValue:Image(uiImage: babyUIImage!))
-            }
-            else {
-                print("load Image failed")
-            }
+            birthdayDetails.babyUIImage = loadedImage
+            displayBabyImage()
+        }  else {
+            print("load image failed")
         }
+    }
+    
+    func calcABC() {
+        let numbers = [0, 1, 2]
+        birthdayDetails.ABCresult = numbers.randomElement() ?? 0
     }
 }
     

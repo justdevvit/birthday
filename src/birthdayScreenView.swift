@@ -52,18 +52,14 @@ enum ABCfield {
 }
 
 struct birthdayScreenView: View {
-    private let leftSwirlsImage: Image
-    private let rightSwirlsImage: Image
-    private let nanitLogoImage: Image
-    private let shareButtonText: String
-    private let shareButtonImage: Image
+    private let leftSwirlsImage = Image("leftSwirls")
+    private let rightSwirlsImage = Image("rightSwirls")
+    private let nanitLogoImage = Image("nanitLogo")
+    private let shareButtonText = "Share the news"
+    private let shareButtonImage = Image("shareWhiteSmall")
     
-    @State private var ageTextPrefix: String = ""
-    @State private var ageTextSuffix: String = ""
-    @State private var ageImage: Image?
     @State private var cameraIconUIImage: UIImage?
     @State private var cameraIconImage: Image?
-    @State private var birthdayDetails = BirthdayDetails(name: "", years: 0, months: 0)
     @State private var babyUIImage: UIImage?
     @State private var babyImage: Image?
     @State private var cameraIconX: CGFloat?
@@ -75,57 +71,11 @@ struct birthdayScreenView: View {
     @State private var shouldShowCamera = false
     @State private var didCancelImagePicker = false
     @State private var shouldShareImage = false
-    @State private var ABCresult: Int?
+    
+    @ObservedObject var birthdayDetails: BirthdayDetails
     
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-        
-    init(birthdayDetails: BirthdayDetails) {
-        self.init()
-        
-        calcABC()
-        
-        self.birthdayDetails = birthdayDetails
-        
-        let name = birthdayDetails.name
-        ageTextPrefix = "TODAY " + name + " IS"
-        var timeUnitsName: String
-        var timeUnitsNumber: Int
-        let years = birthdayDetails.years
-        var months = birthdayDetails.months
-        // for baby that was born this month we'll ceil to 1 month for display purpose (since there is no days resolution)
-        if (years == 0 && months == 0) {
-            months = 1
-        }
-        if (years == 0) {
-            timeUnitsName = "MONTH"
-            timeUnitsNumber = months
-        } else {
-            timeUnitsName = "YEAR"
-            timeUnitsNumber =  years
-        }
-        ageTextSuffix = timeUnitsName + " OLD!"
-        ageImage = Image(String(timeUnitsNumber))
-        
-        babyUIImage = birthdayDetails.babyUIImage
-        guard let wrappedBabyUIImage = babyUIImage else {
-            babyUIImage = UIImage(named: fetchViewByABC(field: ABCfield.babyImagePlaceholderABC))
-            guard let wrappedBabyUIDefaultImage = babyUIImage else {
-                return
-            }
-            babyImage = Image(uiImage: wrappedBabyUIDefaultImage)
-            return
-        }
-        babyImage = Image(uiImage: wrappedBabyUIImage)
-    }
-    
-    init() {
-        leftSwirlsImage = Image("leftSwirls")
-        rightSwirlsImage = Image("rightSwirls")
-        nanitLogoImage = Image("nanitLogo")
-        shareButtonText = "Share the news"
-        shareButtonImage = Image("shareWhiteSmall")
-    }
-    
+
     var btnBack : some View {
         Button(action: {
         presentationMode.wrappedValue.dismiss()
@@ -141,18 +91,18 @@ struct birthdayScreenView: View {
 
     var ageTextSectionView: some View {
         VStack(spacing:0) {
-            Text(ageTextPrefix)
+            Text(getAgeTextPrefix())
                 .frame(width: 226, height: 50, alignment: .center)
                 .padding(.bottom, 13)
             HStack(spacing: 0) {
                 leftSwirlsImage
                     .padding(.trailing, 22)
-                ageImage
+                getAgeImage()
                     .padding(.trailing, 22)
                 rightSwirlsImage
             }
             .padding(.bottom, 14)
-            Text(ageTextSuffix)
+            Text(getAgeTextSuffix())
                 .frame(width: 226, height: 25, alignment: .center)
         }
     }
@@ -213,18 +163,13 @@ struct birthdayScreenView: View {
         .frame(minHeight: 80, maxHeight: .infinity)
     }
     
-    mutating func calcABC() {
-        let numbers = [0, 1, 2]
-        _ABCresult = State(initialValue: numbers.randomElement())
-    }
-    
     func fetchViewByABC(field: ABCfield) -> String {
         let ABCdict: [ABCfield: [String]] = [
             ABCfield.backgroundImageABC : ["iOsBgElephant", "iOsBgFox", "iOsBgPelican"],
             ABCfield.babyImagePlaceholderABC : ["defaultPlaceHolderYellow", "defaultPlaceHolderGreen", "defaultPlaceHolderBlue"],
             ABCfield.cameraImagePlaceholderABC : ["cameraIconYellow", "cameraIconGreen", "cameraIconBlue"]
             ]
-        return ABCdict[field]![ABCresult ?? 0]
+        return (ABCdict[field] != nil) ? ABCdict[field]![birthdayDetails.ABCresult] : ""
     }
 
     var body: some View {
@@ -263,6 +208,40 @@ struct birthdayScreenView: View {
         .sheet(isPresented: $shouldShowImagePicker, onDismiss: imageSelected) {
             ImagePickerView(sourceType: shouldShowCamera ? .camera : .photoLibrary, image: $babyUIImage, isPresented: $shouldShowImagePicker, didCancel: $didCancelImagePicker)
         }
+        .onAppear(perform: {
+            initBabyImage()
+        })
+    }
+    
+    func getAgeTextPrefix() -> String {
+        return "TODAY " + birthdayDetails.name + " IS"
+    }
+    
+    func getAgeTextSuffix() -> String {
+        var timeUnitsName: String
+        let years = birthdayDetails.years
+        if (years == 0) {
+            timeUnitsName = "MONTH"
+        } else {
+            timeUnitsName = "YEAR"
+        }
+        return timeUnitsName + " OLD!"
+    }
+    
+    func getAgeImage() -> Image {
+        var timeUnitsNumber: Int
+        let years = birthdayDetails.years
+        var months = birthdayDetails.months
+        // for baby that was born this month we'll ceil to 1 month for display purpose (since there is no days resolution)
+        if (years == 0 && months == 0) {
+            months = 1
+        }
+        if (years == 0) {
+            timeUnitsNumber = months
+        } else {
+            timeUnitsNumber =  years
+        }
+        return Image(String(timeUnitsNumber))
     }
     
     func calcCameraIconX() {
@@ -280,9 +259,11 @@ struct birthdayScreenView: View {
     }
     
     func imageSelected() {
-        if (didCancelImagePicker) {
+        if (didCancelImagePicker || babyUIImage == nil) {
             return
         }
+        birthdayDetails.babyUIImage = babyUIImage
+        birthdayDetails.babyImage = Image(uiImage: babyUIImage!)
         displayBabyImage()
         saveImage(babyUIImage: babyUIImage)
     }
@@ -302,12 +283,25 @@ struct birthdayScreenView: View {
             shouldShareImage = false
         })
     }
+    
+    func initBabyImage() {
+        if(birthdayDetails.babyUIImage == nil) {
+            babyUIImage = UIImage(named: fetchViewByABC(field: ABCfield.babyImagePlaceholderABC))
+            if(babyUIImage == nil) {
+                return
+            }
+        }
+        else {
+            babyUIImage = birthdayDetails.babyUIImage
+        }
+        displayBabyImage()
+    }
 }
 
 struct birthdayScreenView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            birthdayScreenView()
+            birthdayScreenView(birthdayDetails: BirthdayDetails())
         }
     }
 }
